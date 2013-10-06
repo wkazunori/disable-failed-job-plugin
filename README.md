@@ -1,4 +1,4 @@
-Disable Failed Project Plugin
+Disable Failed Job Plugin
 ==========================
 
 This Plugin disable Job when Build failed.<br>

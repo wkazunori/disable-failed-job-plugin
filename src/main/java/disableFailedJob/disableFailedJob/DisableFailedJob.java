@@ -1,4 +1,4 @@
-package disableFailedProject.disableFailedProject;
+package disableFailedJob.disableFailedJob;
 
 import java.io.IOException;
 
@@ -15,11 +15,11 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 
 
-public class DisableFailedProject extends Publisher {
+public class DisableFailedJob extends Publisher {
 	
 	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 	
-	DisableFailedProject(){
+	DisableFailedJob(){
 	}
 	
 	@Override
@@ -44,7 +44,7 @@ public class DisableFailedProject extends Publisher {
 	@Extension
 	public static final class DescriptorImpl extends Descriptor<Publisher> {
         public DescriptorImpl() {
-            super(DisableFailedProject.class);
+            super(DisableFailedJob.class);
         }
         
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
@@ -55,8 +55,8 @@ public class DisableFailedProject extends Publisher {
             return "When Failed To Build, Disable Job";
         }
 
-        public DisableFailedProject newInstance(StaplerRequest req) throws FormException {
-            return new DisableFailedProject();
+        public DisableFailedJob newInstance(StaplerRequest req) throws FormException {
+            return new DisableFailedJob();
         }
     }
 }

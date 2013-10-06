@@ -6,9 +6,9 @@
     <version>1.509.3</version><!-- which version of Jenkins is this plugin built against? -->
   </parent>
 
-  <groupId>DisableFailedProjectPlugin</groupId>
-  <artifactId>DisableFailedProjectPlugin</artifactId>
-  <name>Disable Failed Project Plugin</name>
+  <groupId>DisableFailedJobPlugin</groupId>
+  <artifactId>DisableFailedJobPlugin</artifactId>
+  <name>Disable Failed Job Plugin</name>
   <version>1.0</version>
   <packaging>hpi</packaging>
 
