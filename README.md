@@ -1,4 +1,8 @@
-DisableFailedProjectPlugin
+Disable Failed Project Plugin
 ==========================
 
-This Plugin disable Job when Build failed.
+This Plugin disable Job when Build failed.<br>
+Please use this when you want to prevent the jobs that are regularly performed, fail in a row.
+
+ビルドが失敗した時に、ジョブを無効にするプラグインです。<br>
+定期実行されてるジョブが、続けて失敗することを防ぐ時などに利用して下さい。
