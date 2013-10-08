@@ -11,6 +11,20 @@
   <name>Disable Failed Job Plugin</name>
   <version>1.0</version>
   <packaging>hpi</packaging>
+  
+  <scm>
+    <connection>scm:git:ssh://git@github.com/jenkinsci/disable-failed-job-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/disable-failed-job-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/disable-failed-job-plugin.git</url>
+  </scm>
+  
+  <developers>
+    <developer>
+      <id>w_kazunori</id>
+      <name>w_kazunori</name>
+      <email>wakamatsu.kazunori@gmail.com</email>
+    </developer>
+  </developers>
 
   <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
   <repositories>
