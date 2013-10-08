@@ -2,6 +2,9 @@ package disableFailedJob.disableFailedJob;
 
 import java.io.IOException;
 
+import net.sf.json.JSONObject;
+
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import hudson.Extension;
@@ -17,14 +20,20 @@ import hudson.tasks.Publisher;
 
 public class DisableFailedJob extends Publisher {
 	
-	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+	private final String whenDisable;
 	
-	DisableFailedJob(){
+	@DataBoundConstructor
+	public DisableFailedJob(String whenDisable){
+		this.whenDisable = whenDisable;
 	}
 	
+	public String getWhenDisable() {
+		return whenDisable;
+	}
+
 	@Override
 	public Descriptor<Publisher> getDescriptor() {
-        return DESCRIPTOR;
+        return (DescriptorImpl) super.getDescriptor();
     }
 	
 	public BuildStepMonitor getRequiredMonitorService() {
@@ -34,15 +43,35 @@ public class DisableFailedJob extends Publisher {
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
-		if (build.getResult() == Result.FAILURE || build.getResult() == Result.UNSTABLE){
-			build.getProject().disable();
+		
+		boolean disableWhenFairue = false;
+		boolean disableWhenUnstable = false;
+		
+		if (whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_ONLY_FAIRURE)){
+			disableWhenFairue = true;
+		} else if(whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_FAIRURE_AND_UNSTABLE)) {
+			disableWhenFairue = true;
+			disableWhenUnstable = true;
+		} else if (whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_ONLY_UNSTABLE)){
+			disableWhenUnstable = true;
+		} else {
+			return false;
 		}
-		listener.getLogger().println("Complete Disable Job");
+		
+		if((disableWhenFairue && (build.getResult() == Result.FAILURE))
+				||( disableWhenUnstable && (build.getResult() == Result.UNSTABLE)) ){
+			build.getProject().disable();
+			listener.getLogger().println("'Disable Failed Job Plugin' Disabled Job");
+		} 
+		
 		return true;
 	}
 	
 	@Extension
 	public static final class DescriptorImpl extends Descriptor<Publisher> {
+		
+		private String whenDisable;
+		
         public DescriptorImpl() {
             super(DisableFailedJob.class);
         }
@@ -55,8 +84,8 @@ public class DisableFailedJob extends Publisher {
             return "When Failed To Build, Disable Job";
         }
 
-        public DisableFailedJob newInstance(StaplerRequest req) throws FormException {
-            return new DisableFailedJob();
+        public String whenDisable(){
+        	return whenDisable;
         }
     }
 }
