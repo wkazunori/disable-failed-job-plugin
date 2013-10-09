@@ -6,11 +6,12 @@
     <version>1.509.3</version><!-- which version of Jenkins is this plugin built against? -->
   </parent>
 
-  <groupId>DisableFailedJobPlugin</groupId>
-  <artifactId>DisableFailedJobPlugin</artifactId>
+  <groupId>disable-failed-job-plugin</groupId>
+  <artifactId>disable-failed-job-plugin</artifactId>
   <name>Disable Failed Job Plugin</name>
   <version>1.3-SNAPSHOT</version>
   <packaging>hpi</packaging>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Disable+Failed+Job+Plugin</url>
   
   <scm>
     <connection>scm:git:ssh://git@github.com/jenkinsci/disable-failed-job-plugin.git</connection>
