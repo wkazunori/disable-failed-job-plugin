@@ -1,36 +1,50 @@
 package disableFailedJob.disableFailedJob;
 
-import java.io.IOException;
-
-import net.sf.json.JSONObject;
-
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import hudson.model.Result; 
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
+
+import java.io.IOException;
+
+import org.kohsuke.stapler.DataBoundConstructor;
 
 
 public class DisableFailedJob extends Publisher {
 	
 	private final String whenDisable;
+	private final String failureTimes;
+	private final String optionalBrockChecked;
 	
 	@DataBoundConstructor
-	public DisableFailedJob(String whenDisable){
+	public DisableFailedJob(String whenDisable, OptionalBrock optionalBrock){
 		this.whenDisable = whenDisable;
+		if (optionalBrock != null){
+			this.failureTimes = optionalBrock.failureTimes;
+			optionalBrockChecked = "true";
+		} else {
+			failureTimes = null;
+			optionalBrockChecked = "false";
+		}
 	}
 	
 	public String getWhenDisable() {
 		return whenDisable;
 	}
-
+	
+	public String getFailureTimes() {
+		return failureTimes;
+	}
+	
+	public String getOptionalBrockChecked() {
+		return optionalBrockChecked;
+	}
+	
 	@Override
 	public Descriptor<Publisher> getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
@@ -44,33 +58,72 @@ public class DisableFailedJob extends Publisher {
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
 		
-		boolean disableWhenFairue = false;
-		boolean disableWhenUnstable = false;
+		int threshold = 0;
+		if (failureTimes != null){
+			threshold = Integer.parseInt(failureTimes);
+		}
+		int lastSuccessBuildNumber = 0;
+		if(build.getPreviousSuccessfulBuild() != null){
+			lastSuccessBuildNumber = build.getPreviousSuccessfulBuild().getNumber();
+		}
+		int lastNotFaildBuildNumber = 0;
+		if(build.getPreviousNotFailedBuild() != null){
+			lastNotFaildBuildNumber = build.getPreviousNotFailedBuild().getNumber();
+		}
+		int lastFaildBuildNumber = 0;
+		if (build.getPreviousCompletedBuild() != null){
+			lastFaildBuildNumber = build.getPreviousCompletedBuild().getNumber();
+		}
+		
+		int faildBuildCount = build.getNumber() - lastNotFaildBuildNumber;
+		int notSuccessBuildCount = build.getNumber() - lastSuccessBuildNumber;
+		int notUnstableBuildCount;
+		if(lastSuccessBuildNumber < lastFaildBuildNumber){
+			notUnstableBuildCount = build.getNumber() - lastFaildBuildNumber;
+		} else {
+			notUnstableBuildCount = build.getNumber() - lastSuccessBuildNumber;
+		}
+		
 		
 		if (whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_ONLY_FAIRURE)){
-			disableWhenFairue = true;
+			if(build.getResult() == Result.FAILURE){
+				if(optionalBrockChecked.equals("true") && faildBuildCount < threshold){
+					return false;
+				}
+				disableJob(build, listener);
+			}
 		} else if(whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_FAIRURE_AND_UNSTABLE)) {
-			disableWhenFairue = true;
-			disableWhenUnstable = true;
+			if(build.getResult() == Result.FAILURE || build.getResult() == Result.UNSTABLE){
+				if(optionalBrockChecked.equals("true") && notSuccessBuildCount < threshold){
+					return false;
+				}
+				disableJob(build, listener);
+			}
 		} else if (whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_ONLY_UNSTABLE)){
-			disableWhenUnstable = true;
+			if(build.getResult() == Result.UNSTABLE){
+				if(optionalBrockChecked.equals("true") && notUnstableBuildCount < threshold){
+					return false;
+				}
+				disableJob(build, listener);
+			}
 		} else {
 			return false;
 		}
 		
-		if((disableWhenFairue && (build.getResult() == Result.FAILURE))
-				||( disableWhenUnstable && (build.getResult() == Result.UNSTABLE)) ){
-			build.getProject().disable();
-			listener.getLogger().println("'Disable Failed Job Plugin' Disabled Job");
-		} 
-		
 		return true;
+	}
+	
+	private void disableJob(AbstractBuild<?, ?> build, BuildListener listener) throws IOException{
+		build.getProject().disable();
+		listener.getLogger().println("'Disable Failed Job Plugin' Disabled Job");
 	}
 	
 	@Extension
 	public static final class DescriptorImpl extends Descriptor<Publisher> {
 		
 		private String whenDisable;
+		private String failureTimes;
+		private String optionalBrockChecked;
 		
         public DescriptorImpl() {
             super(DisableFailedJob.class);
@@ -87,5 +140,24 @@ public class DisableFailedJob extends Publisher {
         public String whenDisable(){
         	return whenDisable;
         }
+        
+        public String failureTimes() {
+    		return failureTimes;
+    	}
+        
+        public String optionalBrockChecked(){
+        	return optionalBrockChecked;
+        }
+        
     }
+	
+	public static class OptionalBrock {
+	    public String failureTimes;
+
+	    @DataBoundConstructor
+	    public OptionalBrock(String failureTimes)
+	    {
+	        this.failureTimes = failureTimes;
+	    }
+	}
 }
