@@ -10,12 +10,13 @@ import hudson.model.listeners.RunListener;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import jenkins.model.Jenkins;
+
 import org.apache.commons.lang.StringUtils;
 
-import jenkins.model.Jenkins;
 import disableFailedJob.disableFailedJob.DisableFailedJob;
-import disableFailedJob.disableFailedJob.DisableFailedJobGlobal;
 import disableFailedJob.disableFailedJob.DisableFailedJob.OptionalBrock;
+import disableFailedJob.disableFailedJob.DisableFailedJobGlobal;
 
 @SuppressWarnings("rawtypes")
 @Extension
@@ -28,21 +29,11 @@ public class DisableFailedJobRunListener extends RunListener<Run> {
 
 	}
 
-	/**
-	 * @param targetType
-	 */
 	@SuppressWarnings("unchecked")
 	public DisableFailedJobRunListener(Class targetType) {
 		super(targetType);
 	}
 
-	/**
-	 * Overrride this method in order to run job disabling step at the end of the build. 
-	 * This method disables the job, when the user has configured disbaling pararmeters in Jenkins global configuration and not in job.
-	 * @param Run r
-	 * @param TaskListener listener
-	 * return void
-	 */
 	@Override
 	public void onCompleted(Run r, TaskListener listener) {
 		DisableFailedJobGlobal.Descriptor descriptor = (DisableFailedJobGlobal.Descriptor) Jenkins
@@ -51,20 +42,28 @@ public class DisableFailedJobRunListener extends RunListener<Run> {
 			if (StringUtils.isNotBlank(descriptor.getWhenDisable())) {
 				if (r instanceof AbstractBuild) {
 					AbstractBuild<?, ?> build = (AbstractBuild) r;
-					// Check if the job already has disable Failed job post build action
+					// Check if the job already has disable Failed job post
+					// build action
 					if (build.getProject().getPublishersList()
 							.get(DisableFailedJob.class) == null) {
-						// Construct the publisher with the values from global configuration
+						// Construct the publisher with the values from global
+						// configuration
 						DisableFailedJob disableFailedJob = new DisableFailedJob(
 								descriptor.getWhenDisable(), new OptionalBrock(
 										descriptor.getFailureTimes()));
 						try {
-							// Call perform to run the check and disable if required
-							disableFailedJob.perform(build, null, (BuildListener) listener);
+							// Call perform to run the check and disable if
+							// required
+							disableFailedJob.perform(build, null,
+									(BuildListener) listener);
 						} catch (InterruptedException e) {
-							listener.getLogger().print("Interrupted exception while running disable failed job: "+e);
+							listener.getLogger().print(
+									"Interrupted exception while running disable failed job: "
+											+ e);
 						} catch (IOException e) {
-							listener.getLogger().print("IO exception while running disable failed job: "+e);
+							listener.getLogger().print(
+									"IO exception while running disable failed job: "
+											+ e);
 						}
 					}
 				}
