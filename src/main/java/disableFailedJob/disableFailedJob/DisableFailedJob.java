@@ -21,8 +21,7 @@ public class DisableFailedJob extends Publisher {
 	private final String optionalBrockChecked;
 
 	private static final String FAILURE_DISCRIPTION = "This job has been disabled by 'Disable Failed Job Plugin' due to consecutive failures. ";
-	private static final String LINE_SEPARATOR = System
-			.getProperty("line.separator");
+	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	@DataBoundConstructor
 	public DisableFailedJob(String whenDisable, OptionalBrock optionalBrock) {
@@ -58,8 +57,7 @@ public class DisableFailedJob extends Publisher {
 	}
 
 	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
-			BuildListener listener) throws InterruptedException, IOException {
+	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
 		int threshold = 0;
 		if (failureTimes != null) {
@@ -67,18 +65,15 @@ public class DisableFailedJob extends Publisher {
 		}
 		int lastSuccessBuildNumber = 0;
 		if (build.getPreviousSuccessfulBuild() != null) {
-			lastSuccessBuildNumber = build.getPreviousSuccessfulBuild()
-					.getNumber();
+			lastSuccessBuildNumber = build.getPreviousSuccessfulBuild().getNumber();
 		}
 		int lastNotFaildBuildNumber = 0;
 		if (build.getPreviousNotFailedBuild() != null) {
-			lastNotFaildBuildNumber = build.getPreviousNotFailedBuild()
-					.getNumber();
+			lastNotFaildBuildNumber = build.getPreviousNotFailedBuild().getNumber();
 		}
 		int lastFaildBuildNumber = 0;
 		if (build.getPreviousCompletedBuild() != null) {
-			lastFaildBuildNumber = build.getPreviousCompletedBuild()
-					.getNumber();
+			lastFaildBuildNumber = build.getPreviousCompletedBuild().getNumber();
 		}
 
 		int faildBuildCount = build.getNumber() - lastNotFaildBuildNumber;
@@ -90,30 +85,23 @@ public class DisableFailedJob extends Publisher {
 			notUnstableBuildCount = build.getNumber() - lastSuccessBuildNumber;
 		}
 
-		if (whenDisable
-				.equals(ParameterDefinision.JOB_DISABLE_WHEN_ONLY_FAIRURE)) {
+		if (whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_ONLY_FAIRURE)) {
 			if (build.getResult() == Result.FAILURE) {
-				if (optionalBrockChecked.equals("true")
-						&& faildBuildCount < threshold) {
+				if (optionalBrockChecked.equals("true") && faildBuildCount < threshold) {
 					return false;
 				}
 				disableJob(build, listener);
 			}
-		} else if (whenDisable
-				.equals(ParameterDefinision.JOB_DISABLE_WHEN_FAIRURE_AND_UNSTABLE)) {
-			if (build.getResult() == Result.FAILURE
-					|| build.getResult() == Result.UNSTABLE) {
-				if (optionalBrockChecked.equals("true")
-						&& notSuccessBuildCount < threshold) {
+		} else if (whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_FAIRURE_AND_UNSTABLE)) {
+			if (build.getResult() == Result.FAILURE || build.getResult() == Result.UNSTABLE) {
+				if (optionalBrockChecked.equals("true") && notSuccessBuildCount < threshold) {
 					return false;
 				}
 				disableJob(build, listener);
 			}
-		} else if (whenDisable
-				.equals(ParameterDefinision.JOB_DISABLE_WHEN_ONLY_UNSTABLE)) {
+		} else if (whenDisable.equals(ParameterDefinision.JOB_DISABLE_WHEN_ONLY_UNSTABLE)) {
 			if (build.getResult() == Result.UNSTABLE) {
-				if (optionalBrockChecked.equals("true")
-						&& notUnstableBuildCount < threshold) {
+				if (optionalBrockChecked.equals("true") && notUnstableBuildCount < threshold) {
 					return false;
 				}
 				disableJob(build, listener);
@@ -125,20 +113,17 @@ public class DisableFailedJob extends Publisher {
 		return true;
 	}
 
-	private void disableJob(AbstractBuild<?, ?> build, BuildListener listener)
-			throws IOException {
+	private void disableJob(AbstractBuild<?, ?> build, BuildListener listener) throws IOException {
 		build.getProject().disable();
 		String description = build.getProject().getDescription();
 		if (description == null) {
 			description = new String();
 		}
 		if (!description.contains(FAILURE_DISCRIPTION)) {
-			description = description.concat(LINE_SEPARATOR
-					+ FAILURE_DISCRIPTION);
+			description = description.concat(LINE_SEPARATOR + FAILURE_DISCRIPTION);
 		}
 		build.getProject().setDescription(description);
-		listener.getLogger()
-				.println("'Disable Failed Job Plugin' Disabled Job");
+		listener.getLogger().println("'Disable Failed Job Plugin' Disabled Job");
 	}
 
 	@Extension
