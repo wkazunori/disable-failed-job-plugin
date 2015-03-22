@@ -21,6 +21,8 @@ public class DisableFailedJob extends Publisher {
 	private final String failureTimes;
 	private final String optionalBrockChecked;
 	
+	public static final String failureDescription = "\n This job has been disabled by 'Disable Failed Job Plugin' due to consecutive failures. ";
+
 	@DataBoundConstructor
 	public DisableFailedJob(String whenDisable, OptionalBrock optionalBrock){
 		this.whenDisable = whenDisable;
@@ -115,6 +117,14 @@ public class DisableFailedJob extends Publisher {
 	
 	private void disableJob(AbstractBuild<?, ?> build, BuildListener listener) throws IOException{
 		build.getProject().disable();
+		String description = build.getProject().getDescription();
+		if (description == null) {
+			description = new String();
+		}
+		if (!description.contains(failureDescription)) {
+			description = description.concat(failureDescription);
+		}
+		build.getProject().setDescription(description);
 		listener.getLogger().println("'Disable Failed Job Plugin' Disabled Job");
 	}
 	
